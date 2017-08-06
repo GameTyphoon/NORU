@@ -5,9 +5,11 @@ public class Move_Chracter : MonoBehaviour
     public float speed;
     Rigidbody2D rigidbody;
     Animator anim;
+    GameObject camera;
 
     // Use this for initialization
     void Start () {
+        camera = GameObject.FindGameObjectWithTag("MainCamera");
         rigidbody = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         speed = 7.5f;
@@ -32,6 +34,8 @@ public class Move_Chracter : MonoBehaviour
     {
         Vector2 movement = new Vector2(h_move, v_move) * speed;
         rigidbody.velocity = Vector2.ClampMagnitude(movement, speed);
+
+        camera.transform.position = new Vector3(transform.position.x, transform.position.y, -10);
     }
 
     private void FixedUpdate()
