@@ -47,8 +47,8 @@ public class MapsGenerator : MonoBehaviour {
         {
             random = Random.Range(0, select_Rooms.Count);   //생성 가능한 방을 뽑고 제거.
             generated_Rooms.Add(select_Rooms[random]);      //생성된 방은 다른 리스트에 저장
-            temp_Y = (int)select_Rooms[random].y;
-            temp_X = (int)select_Rooms[random].x;
+            temp_Y = (int)select_Rooms[random][0];
+            temp_X = (int)select_Rooms[random][1];
             select_Rooms.RemoveAt(random);
 
             map_Info[temp_Y, temp_X] = (count + 1);
