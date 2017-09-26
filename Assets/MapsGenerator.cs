@@ -8,7 +8,7 @@ public class MapsGenerator : MonoBehaviour {
     public int width, height;
     public int[,] map_Info, check;
     List<Vector2> select_Rooms;
-    List<Vector2> generated_Rooms;
+    List<Room> generated_Rooms;
 
     void Start () {
         Init();
@@ -22,14 +22,12 @@ public class MapsGenerator : MonoBehaviour {
         map_Info = new int[height, width];
         check = new int[height, width];
         select_Rooms = new List<Vector2>();
-        generated_Rooms = new List<Vector2>();
+        generated_Rooms = new List<Room>();
     }
 
     //맵 생성 코어 함수
     bool Generate_Maps(int start_Y, int start_X)
     {
-        
-
         if (start_Y >= height || start_X >= width || start_X < 0 || start_Y < 0 || room_Count > width * height)
             return false;
         //해당 조건으로 맵을 생성 할수 있는지 체크
@@ -42,11 +40,10 @@ public class MapsGenerator : MonoBehaviour {
         int random;
         int count = 0;
 
-        //DFS코드
         while (count < room_Count && 0 < select_Rooms.Count)    //방 개수가 목표치까지 생기거나, 리스트가 빌때까지(경우 없음)
         {
             random = Random.Range(0, select_Rooms.Count);   //생성 가능한 방을 뽑고 제거.
-            generated_Rooms.Add(select_Rooms[random]);      //생성된 방은 다른 리스트에 저장
+            generated_Rooms.Add(new Room(select_Rooms[random][0], select_Rooms[random][1]));      //생성된 방은 다른 리스트에 저장
             temp_Y = (int)select_Rooms[random][0];
             temp_X = (int)select_Rooms[random][1];
             select_Rooms.RemoveAt(random);
@@ -73,15 +70,21 @@ public class MapsGenerator : MonoBehaviour {
                 select_Rooms.Add(new Vector2(temp_Y, temp_X - 1));
                 check[temp_Y, temp_X - 1] = 1;
             }
-
             count++;
         }
-
-        for(int i = 0; i < generated_Rooms.Count; i++)
-        {
-            print(generated_Rooms[i]);
-        }
-        //제대로 됐는지 확인.
+        
         return true;
+    }
+}
+
+class Room
+{
+    private float x;  //height
+    private float y;  //width
+
+    public Room(float v1, float v2)
+    {
+        this.x = v1;
+        this.y = v2;
     }
 }
