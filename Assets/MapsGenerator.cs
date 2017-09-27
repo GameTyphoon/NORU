@@ -5,34 +5,30 @@ using UnityEngine;
 
 //코드 전체에서 x가 높이 축, y가 너비 축
 
-public class MapsGenerator : MonoBehaviour {
+public class MapsGenerator {
 
-    public int room_Count;
-    public int width, height;
-    int[,] check;
-    List<Vector2> select_Rooms;
+    private int room_Count;
+    private int width, height;
+    private int[,] check;
+    private List<Vector2> select_Rooms;
 
     public List<Room> generated_Rooms;
     public Room[,] map_Info;
 
-    void Start () {
-        Init();
-        Generate_Maps(height / 2, width / 2);
+    public void Start (int height, int width, int room_Count)  //he, wi, count, size
+    {
+        this.height = height;
+        this.width = width;
+        this.room_Count = room_Count;
+        check = new int[height, width];
+        select_Rooms = new List<Vector2>();
+        generated_Rooms = new List<Room>();
+        map_Info = new Room[height, width];
         //맵 중앙부터 생성
     }
 
-    //변수 초기화, (배열, 리스트 초기화)
-    void Init()
-    {
-        check = new int[height, width];
-        select_Rooms = new List<Vector2>();
-
-        generated_Rooms = new List<Room>();
-        map_Info = new Room[height, width];
-    }
-
     //맵 생성 코어 함수
-    bool Generate_Maps(int start_Y, int start_X)
+    public bool Generate_Maps(int start_Y, int start_X, int size)  //방 생성 시작지점과, Size
     {
         if (start_Y >= height || start_X >= width || start_X < 0 || start_Y < 0 || room_Count > width * height)
             return false;
@@ -52,8 +48,9 @@ public class MapsGenerator : MonoBehaviour {
             temp_Y = (int)select_Rooms[random][0];
             temp_X = (int)select_Rooms[random][1];
 
-            generated_Rooms.Add(new Room(temp_Y, temp_X));  //생성된 방은 다른 리스트에 저장
-            map_Info[temp_Y, temp_X] = generated_Rooms[generated_Rooms.Count - 1];  //찾기 쉽게 이차원 배열에 등록
+            Room newRoom = new Room(temp_Y, temp_X, size);
+            generated_Rooms.Add(newRoom);  //생성된 방은 리스트에 저장
+            map_Info[temp_Y, temp_X] = newRoom;  //찾기 쉽게 이차원 배열에 등록
 
             select_Rooms.RemoveAt(random);
             if (temp_Y + 1 < height && check[temp_Y + 1, temp_X] != 1)
@@ -78,14 +75,14 @@ public class MapsGenerator : MonoBehaviour {
             }
             count++;
         }
-        
         return true;
     }
 }
-public class Room
+
+public class Room 
 {
-    private int x;  //x가 높이 축 전체 맵에서
-    private int y;  //y가 너비 축 전체 맵에서
+    public int x;  //x가 높이 축 전체 맵에서
+    public int y;  //y가 너비 축 전체 맵에서
 
     private int width;
     private int height;
@@ -110,13 +107,13 @@ public class Room
         SetRoomSize(v3);
     }
 
-    void SetRoomPos(int v1, int v2)
+    private void SetRoomPos(int v1, int v2)
     {
         x = v1;
         y = v2;
     }
 
-    void SetRoomSize(int size)
+    private void SetRoomSize(int size)
     {
         float w = 1.6f;
         float h = 1.0f;
@@ -132,9 +129,55 @@ public class Room
 
         if (width < 8)
             width = 8;
+        else if (width % 2 == 1)
+            width += 1;
+
         if (height < 5)
             height = 5;
+        else if (height % 2 == 1)
+            height += 1;
 
         cell_Info = new int[height, width];
+
+        int i, j;
+        for (i = 0; i < height; i++)
+        {
+            for (j = 0; j < width; j++)
+            {
+                if (i == 0 || i == height - 1 || j == 0 || j == width - 1)
+                    cell_Info[i, j] = 2;  //벽
+                else
+                    cell_Info[i, j] = 1;  //땅
+            }
+        }
+    }
+
+    public void RoomGenerate(GameObject[] gameObjects, GameObject[] tiles)
+    {
+        int i, j, count = 0;
+        for (i = 0; i < height; i++)
+        {
+            for (j = 0; j < width; j++)
+            {
+                if (gameObjects[count].GetComponent<SpriteRenderer>() == null)
+                    gameObjects[count].AddComponent<SpriteRenderer>();
+
+                if (cell_Info[i, j] == 1)
+                    gameObjects[count].GetComponent<SpriteRenderer>().sprite = tiles[0].GetComponent<SpriteRenderer>().sprite;
+
+                else if (cell_Info[i, j] == 2)
+                {
+                    gameObjects[count].GetComponent<SpriteRenderer>().sprite = tiles[1].GetComponent<SpriteRenderer>().sprite;
+                    
+                    if (gameObjects[count].GetComponent<BoxCollider2D>() == null)
+                        gameObjects[count].AddComponent<BoxCollider2D>();
+                }
+
+                gameObjects[count].transform.position = new Vector3(j, i, 0);
+                gameObjects[count].name = "Tile" + count;
+
+                count++;
+            }
+        }
     }
 }
